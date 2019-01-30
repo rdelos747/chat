@@ -7,9 +7,9 @@ const http = require('http');
 const fs = require('fs');
 
 const httpServer = http.createServer((req, res) => {
-  console.log(new Date(), 'Received request for', request.url);
-  response.writeHead(404);
-  response.end();
+  console.log(new Date(), 'Received request for', req.url);
+  res.writeHead(404);
+  res.end();
 });
 
 httpServer.listen(port, () => {
