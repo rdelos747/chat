@@ -5,7 +5,7 @@
   "scripts": {
     "dev-server": "node ./server.js",
     "dev-client": "node ./client.js",
-    "server": "NODE_ENV=production node ./server.js",
+    "server": "NODE_ENV=production node ./server.js &",
     "chat": "NODE_ENV=production node ./client.js"
   },
   "author": "",
