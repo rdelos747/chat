@@ -7,5 +7,8 @@
     "start-client": "node ./client.js"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "websocket": "^1.0.28"
+  }
 }
