@@ -1,2 +1,4 @@
 .DS_Store
+client-config.json
+server-config.json
 node_modules/

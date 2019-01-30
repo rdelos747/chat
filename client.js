@@ -2,8 +2,13 @@
 
 const webSocket = require('websocket').client;
 const readline = require('readline');
+const fs = require('fs');
 
-const serverAddress = (process.env.NODE_ENV === 'production') ? 'http://rafaeldelossantos.com/chat' : 'http://localhost:8090/';
+let serverAddress = 'http://localhost:8090/';
+if (process.env.NODE_ENV === 'production') {
+  let config = JSON.parse(fs.readFileSync('./client-config.json', 'utf8'));
+  serverAddress = config.serverAddress;
+}
 
 const read = readline.createInterface({
   input: process.stdin,
@@ -12,6 +17,13 @@ const read = readline.createInterface({
 
 const client = new webSocket();
 client.connect(serverAddress);
+
+client.on('connectFailed', error => {
+  console.log(error.toString());
+  console.log('You are probably not whitelisted ;)');
+  read.close();
+  process.exit();
+});
 
 client.on('connect', connection => {
   console.log('connected to', connection.remoteAddress);

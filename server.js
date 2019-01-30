@@ -4,15 +4,32 @@ const port = 8090;
 
 const webSocket = require('websocket').server;
 const http = require('http');
+const fs = require('fs');
 
-const httpServer = http.createServer((req, res) => {});
+const httpServer = http.createServer((req, res) => {
+  console.log(new Date(), 'Received request for', request.url);
+  response.writeHead(404);
+  response.end();
+});
+
 httpServer.listen(port, () => {
-  console.log(`listening on port ${port}`);
+  console.log(new Date(), 'Server is listening on port', port);
 });
 
 const server = new webSocket({
-  httpServer: httpServer
+  httpServer: httpServer,
+  autoAcceptConnections: false
 });
+
+const verify = (addr) => {
+  if (process.env.NODE_ENV === 'production') {
+    const config = JSON.parse(fs.readFileSync('./server-config.json', 'utf8'));
+    if (!config.whitelist.includes(addr)) {
+      return false;
+    }
+  }
+  return true;
+}
 
 let clients = {};
 
@@ -20,20 +37,26 @@ server.on('request', (request) => {
   // ///////////////////////////////////////////
   // I N I T
   // /////////////
-  console.log(request.remoteAddress);
+  console.log(new Date(), 'new request from', request.remoteAddress);
+
+  if (!verify(request.remoteAddress)) {
+    console.log(request.remoteAddress, 'not in whitelist');
+    request.reject();
+    return;
+  }
+
   const connection = request.accept(null, 0);
   const id = Math.random().toString(36).substring(2, 15);
   clients[id] = {
     connection: connection,
     name: ''
   };
-  //printClients();
+  printClients();
 
   // ///////////////////////////////////////////
   // B R O A D C A S T
   // /////////////
   const broadcast = (type, message) => {
-    //console.log(type, clients[id].name, message);
     for (let client in clients) {
       clients[client].connection.send(JSON.stringify({
         type: type,
@@ -62,8 +85,9 @@ server.on('request', (request) => {
   // /////////////
   connection.on('close', () => {
     broadcast('system', `${clients[id].name} disconnected`);
+    console.log(new Date(), request.remoteAddress, 'disconnected');
     delete clients[id];
-    //printClients();
+    printClients();
   });
 
   // ///////////////////////////////////////////
@@ -78,7 +102,6 @@ server.on('request', (request) => {
     }
 
     if(!foundName) {
-      //console.log('set name', id, name);
       clients[id].name = name;
       connection.send(JSON.stringify({
         type: 'set name',
@@ -88,18 +111,17 @@ server.on('request', (request) => {
       broadcast('system', `${name} connected`);
     }
     else {
-      //console.log('cannot set name', id, name);
       connection.send(JSON.stringify({
         type: 'system',
         body: 'name taken :('
       }));
     }
-  }
-
-  // ///////////////////////////////////////////
-  // H E L P E R S
-  // /////////////
-  const printClients = () => {
-    console.log('num clients', Object.keys(clients).length);
-  }
+  };
 });
+
+// ///////////////////////////////////////////
+// H E L P E R S
+// /////////////
+const printClients = () => {
+  console.log('num clients', Object.keys(clients).length);
+};
