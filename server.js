@@ -47,11 +47,22 @@ server.on('request', (request) => {
 
   const connection = request.accept(null, 0);
   const id = Math.random().toString(36).substring(2, 15);
+  //const allNames = clients.map(client => client.name).join(' ');
   clients[id] = {
     connection: connection,
     name: ''
   };
   printClients();
+
+  // ///////////////////////////////////////////
+  // S I N G L E
+  // /////////////
+  // const broadcastSingle = (type, message) => {
+  //   connection.send(JSON.stringify({
+  //     type: type,
+  //     body: message
+  //   }));
+  // }
 
   // ///////////////////////////////////////////
   // B R O A D C A S T
@@ -72,12 +83,22 @@ server.on('request', (request) => {
   connection.on('message', json => {
     let message = JSON.parse(json.utf8Data);
 
-    if (message.type === 'set name') { 
-      setName(message.body); 
+    if (message.command) {
+      handleCommand(message.command, message.options);
+    } 
+    else {
+      broadcast('message', message.message); 
     }
-    else if (message.type === 'message') { 
-      broadcast('message', message.body); 
-    }
+
+    // if (message.type === 'set name') {
+    //   setName(message.body); 
+    // }
+    // else if (message.type === 'all users') {
+    //   getAllUsers();
+    // }
+    // else if (message.type === 'message') { 
+    //   broadcast('message', message.body); 
+    // }
   });
 
   // ///////////////////////////////////////////
@@ -91,6 +112,18 @@ server.on('request', (request) => {
   });
 
   // ///////////////////////////////////////////
+  // C O M M A N D S
+  // /////////////
+  const handleCommand = (command, options) => {
+    if (command === 'set name') {
+      setName(options.name);
+    }
+    else if (command === 'all users') {
+      getAllUsers();
+    }
+  }
+
+  // ///////////////////////////////////////////
   // S E T  N A M E
   // /////////////
   const setName = (name) => {
@@ -102,13 +135,20 @@ server.on('request', (request) => {
     }
 
     if(!foundName) {
+      const oldName = clients[id].name;
       clients[id].name = name;
       connection.send(JSON.stringify({
         type: 'set name',
         body: name
       }));
 
-      broadcast('system', `${name} connected`);
+      if (oldName === '') {
+        broadcast('system', `${name} connected`);
+        getAllUsers();
+      }
+      else {
+        broadcast('system', `${oldName} changed name to ${name}`);
+      }
     }
     else {
       connection.send(JSON.stringify({
@@ -117,6 +157,14 @@ server.on('request', (request) => {
       }));
     }
   };
+
+  const getAllUsers = () => {
+    let names = Object.keys(clients).map(key => clients[key].name);
+    connection.send(JSON.stringify({
+      type: 'system',
+      body: 'all users: ' + names.join(' ')
+    }));
+  }
 });
 
 // ///////////////////////////////////////////
