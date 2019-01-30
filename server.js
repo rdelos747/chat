@@ -20,6 +20,7 @@ server.on('request', (request) => {
   // ///////////////////////////////////////////
   // I N I T
   // /////////////
+  console.log(request.remoteAddress);
   const connection = request.accept(null, 0);
   const id = Math.random().toString(36).substring(2, 15);
   clients[id] = {

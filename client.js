@@ -3,7 +3,7 @@
 const webSocket = require('websocket').client;
 const readline = require('readline');
 
-const serverAddress = 'http://localhost:8090/';
+const serverAddress = (process.env.NODE_ENV === 'production') ? 'http://rafaeldelossantos.com/chat' : 'http://localhost:8090/';
 
 const read = readline.createInterface({
   input: process.stdin,
