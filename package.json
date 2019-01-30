@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev-server": "node ./server.js",
+    "dev-server": "node ./chatserver.js",
     "dev-client": "node ./client.js",
-    "server": "NODE_ENV=production node ./server.js &",
+    "server": "NODE_ENV=production node ./chatserver.js &",
     "chat": "NODE_ENV=production node ./client.js"
   },
   "author": "",
