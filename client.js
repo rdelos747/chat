@@ -3,7 +3,7 @@
 const webSocket = require('websocket').client;
 const readline = require('readline');
 
-const serverAddress = 'http://localhost:3001/';
+const serverAddress = 'http://localhost:8090/';
 
 const read = readline.createInterface({
   input: process.stdin,

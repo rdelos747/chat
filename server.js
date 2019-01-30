@@ -52,7 +52,7 @@ server.on('request', (request) => {
       setName(message.body); 
     }
     else if (message.type === 'message') { 
-      braodcast('message', message.body); 
+      broadcast('message', message.body); 
     }
   });
 
