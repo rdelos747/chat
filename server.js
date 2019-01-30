@@ -1,6 +1,6 @@
 'use strict';
 
-const port = 3001;
+const port = 8090;
 
 const webSocket = require('websocket').server;
 const http = require('http');
@@ -26,7 +26,21 @@ server.on('request', (request) => {
     connection: connection,
     name: ''
   };
-  printClients();
+  //printClients();
+
+  // ///////////////////////////////////////////
+  // B R O A D C A S T
+  // /////////////
+  const broadcast = (type, message) => {
+    //console.log(type, clients[id].name, message);
+    for (let client in clients) {
+      clients[client].connection.send(JSON.stringify({
+        type: type,
+        body: message,
+        author: clients[id].name
+      }));
+    }
+  };
 
   // ///////////////////////////////////////////
   // G E T  M E S S A G E
@@ -48,7 +62,7 @@ server.on('request', (request) => {
   connection.on('close', () => {
     broadcast('system', `${clients[id].name} disconnected`);
     delete clients[id];
-    printClients();
+    //printClients();
   });
 
   // ///////////////////////////////////////////
@@ -82,23 +96,9 @@ server.on('request', (request) => {
   }
 
   // ///////////////////////////////////////////
-  // B R O A D C A S T
-  // /////////////
-  const broadcast = (type, message) => {
-    //console.log(type, clients[id].name, message);
-    for (let client in clients) {
-      clients[client].connection.send(JSON.stringify({
-        type: type,
-        body: message,
-        author: clients[id].name
-      }));
-    }
-  };
-
-  // ///////////////////////////////////////////
   // H E L P E R S
   // /////////////
-  const numClients = () => {
+  const printClients = () => {
     console.log('num clients', Object.keys(clients).length);
   }
 });
